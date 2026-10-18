@@ -1264,6 +1264,42 @@ const main = (config) => {
   // 27. One-click Proxy
   // ================================================================
 
+  const businessGroupNames = new Set([
+    "AI", "YouTube", "Google", "GitHub", "Netflix", "Spotify",
+    "Steam", "Telegram", "TikTok", "Apple", "Microsoft", "网络检测",
+    "一键代理"
+  ]);
+
+  const preservedGroupsByName = new Map(
+    finalPreservedGroups.map((group) => [group.name, group])
+  );
+
+  // Do not offer an airport group that leads back to a business group:
+  // adding that group as a business option would create a reference cycle.
+  function reachesBusinessGroup(name, visited) {
+    if (businessGroupNames.has(name)) {
+      return true;
+    }
+    if (visited.has(name)) {
+      return false;
+    }
+    visited.add(name);
+    const group = preservedGroupsByName.get(name);
+    return Boolean(
+      group && Array.isArray(group.proxies) &&
+      group.proxies.some((target) => reachesBusinessGroup(target, visited))
+    );
+  }
+
+  const airportGroupOptions = finalPreservedGroups
+    .filter((group) => !reachesBusinessGroup(group.name, new Set()))
+    .map((group) => group.name);
+
+  function withAirportGroups(options) {
+    // Append to preserve the existing default and subscription node order.
+    return Array.from(new Set(options.concat(airportGroupOptions)));
+  }
+
   const mainSelector = {
 
     "name": "一键代理",
@@ -1271,9 +1307,9 @@ const main = (config) => {
     "type": "select",
 
     "proxies":
-      availableRegions.concat([
+      withAirportGroups(availableRegions.concat([
         "国内直连"
-      ])
+      ]))
 
   };
 
@@ -1303,11 +1339,11 @@ const main = (config) => {
       "type": "select",
 
       "proxies":
-        name === "AI"
+        withAirportGroups(name === "AI"
           ? proxyNames.slice()
           : availableRegions.concat([
               "国内直连"
-            ])
+            ]))
 
     };
 
