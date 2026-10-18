@@ -131,15 +131,50 @@ test('an automatic airport group pointing to a business group cannot be offered 
   assertAcyclic(config);
 });
 
-test('the general selector offers region pools first, then every raw node in subscription order', () => {
+test('general selector shows auto-select, failover, regions, then the airport group (not raw nodes)', () => {
   const config = generate(airportInput());
   const general = config['proxy-groups'].find(group => group.name === '外网通用');
   const regions = config['proxy-groups'].filter(group => group.type === 'url-test' && group.name !== '自动选择');
   assert.equal(general.type, 'select');
-  assert.deepEqual(general.proxies, [...regions.map(group => group.name), ...input.proxies.map(proxy => proxy.name)]);
+  assert.deepEqual(general.proxies, ['自动选择', '故障转移', ...regions.map(group => group.name), '测试机场']);
   for (const region of regions) {
     assert.ok(region.proxies.every(name => input.proxies.some(proxy => proxy.name === name)));
   }
+  assert.ok(general.proxies.every(name => !input.proxies.some(proxy => proxy.name === name)));
+  assert.deepEqual(config['proxy-groups'].find(group => group.name === '测试机场').proxies,
+    ['自动选择', '故障转移', ...input.proxies.map(proxy => proxy.name)]);
+  assertAcyclic(config);
+});
+
+test('general selector retains regions but does not list raw nodes if no airport all-node group exists', () => {
+  const config = generate(input);
+  const general = config['proxy-groups'].find(group => group.name === '外网通用');
+  const regions = config['proxy-groups'].filter(group => group.type === 'url-test');
+  assert.deepEqual(general.proxies, regions.map(group => group.name));
+  assert.ok(general.proxies.length > 0);
+  assertAcyclic(config);
+});
+
+test('general selector skips airport groups that point back to itself or business groups', () => {
+  const fixture = airportInput();
+  fixture['proxy-groups'][0].proxies.push('外网通用');
+  const config = generate(fixture);
+  const general = config['proxy-groups'].find(group => group.name === '外网通用');
+  assert.ok(!general.proxies.includes('测试机场'));
+  assert.deepEqual(general.proxies.slice(0, 2), ['自动选择', '故障转移']);
+  assertAcyclic(config);
+});
+
+test('multiple auto-select and failover groups are kept ahead of regional and airport selectors', () => {
+  const fixture = airportInput();
+  fixture['proxy-groups'].push(
+    { name: '机场2 故障转移', type: 'fallback', proxies: input.proxies.map(proxy => proxy.name) },
+    { name: '机场2 自动选择', type: 'url-test', proxies: input.proxies.map(proxy => proxy.name) },
+  );
+  const config = generate(fixture);
+  const general = config['proxy-groups'].find(group => group.name === '外网通用');
+  assert.deepEqual(general.proxies.slice(0, 4),
+    ['自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移']);
   assertAcyclic(config);
 });
 
