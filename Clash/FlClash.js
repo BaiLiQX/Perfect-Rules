@@ -64,7 +64,7 @@ const main = (config) => {
 
     "enable": true,
 
-    "listen": "0.0.0.0:53",
+    // No external DNS listener is needed for ordinary system-proxy traffic.
 
     "prefer-h3": false,
 
@@ -72,7 +72,7 @@ const main = (config) => {
 
     "enhanced-mode": "fake-ip",
 
-    "fake-ip-range": "172.19.0.1/16",
+    "fake-ip-range": "198.18.0.1/16",
 
     "fake-ip-filter": [
       "+.lan",
@@ -123,8 +123,8 @@ const main = (config) => {
       ],
 
       "geosite:geolocation-!cn": [
-        "https://cloudflare-dns.com/dns-query",
-        "https://dns.google/dns-query"
+        "https://cloudflare-dns.com/dns-query#外网通用",
+        "https://dns.google/dns-query#外网通用"
       ]
 
     },
@@ -140,8 +140,8 @@ const main = (config) => {
     ],
 
     "fallback": [
-      "https://cloudflare-dns.com/dns-query",
-      "https://dns.google/dns-query"
+      "https://cloudflare-dns.com/dns-query#外网通用",
+      "https://dns.google/dns-query#外网通用"
     ],
 
     "fallback-filter": {
@@ -171,39 +171,10 @@ const main = (config) => {
   };
 
 
-  // ================================================================
-  // 4. TUN
-  // ================================================================
-
-  config["tun"] = {
-
-    "enable": true,
-
-    "device": "FlClash",
-
-    "stack": "gvisor",
-
-    "dns-hijack": [
-      "0.0.0.0:53"
-    ],
-
-    "auto-route": true,
-
-    "auto-detect-interface": false,
-
-    "strict-route": true,
-
-    "mtu": 1280,
-
-    "inet4-address": [
-      "172.19.0.1/30"
-    ],
-
-    "auto-redirect": false,
-
-    "disable-icmp-forwarding": true
-
-  };
+  // Keep TUN and system-level DNS interception out of this override.
+  // Remove TUN settings inherited from the subscription; FlClash controls
+  // whether to enable its own VPN/TUN mode on devices that need it.
+  delete config["tun"];
 
 
   // ================================================================
