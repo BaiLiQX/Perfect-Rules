@@ -703,15 +703,14 @@ const main = (config) => {
     }
 
 
-    // Groups containing other groups
-
+    // Small airport subscriptions can have just two or three real nodes
+    // plus Auto-Select / Failover. Preserve their named all-node selector.
     if (composition.groups > 0) {
 
-      if (composition.actualNodes >= 5) {
-        return true;
-      }
+      const hasAirportAutomation = group.proxies.some((name) =>
+        isAutoSelectGroup(name) || isFailoverGroup(name));
 
-      return false;
+      return composition.actualNodes >= 5 || hasAirportAutomation;
 
     }
 
