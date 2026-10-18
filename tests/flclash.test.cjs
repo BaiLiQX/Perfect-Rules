@@ -48,14 +48,22 @@ test('foreign DNS uses a GeoSite policy and AI precedes broader services', () =>
   assert.ok(config.rules.indexOf('RULE-SET,GitHub,GitHub') < config.rules.indexOf('RULE-SET,Microsoft,Microsoft'));
 });
 
-test('TUN parameters remain the upstream baseline during the user trial', () => {
-  assert.deepEqual(generate(input).tun, {
-    enable: true, device: 'FlClash', stack: 'gvisor',
-    'dns-hijack': ['0.0.0.0:53'], 'auto-route': true,
-    'auto-detect-interface': false, 'strict-route': true, mtu: 1280,
-    'inet4-address': ['172.19.0.1/30'], 'auto-redirect': false,
-    'disable-icmp-forwarding': true,
-  });
+test('system-proxy configuration omits TUN hijack and routes foreign DoH via general proxy', () => {
+  const config = generate({ ...input, tun: { enable: true, 'dns-hijack': ['any:53'] } });
+  assert.equal(config.tun, undefined);
+  assert.equal(config.dns.listen, undefined);
+  assert.equal(config.dns['fake-ip-range'], '198.18.0.1/16');
+  const foreign = [
+    'https://cloudflare-dns.com/dns-query#外网通用',
+    'https://dns.google/dns-query#外网通用',
+  ];
+  assert.deepEqual(config.dns['nameserver-policy']['geosite:geolocation-!cn'], foreign);
+  assert.deepEqual(config.dns.fallback, foreign);
+  assert.deepEqual(config.dns['proxy-server-nameserver'], [
+    'https://dns.alidns.com/dns-query',
+    'https://doh.pub/dns-query',
+  ]);
+  assert.ok(config['proxy-groups'].some(group => group.name === '外网通用'));
 });
 
 function airportInput(name = '测试机场') {
