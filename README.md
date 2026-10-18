@@ -9,7 +9,7 @@ AI 策略组直接列出当前机场订阅中的全部节点，保留订阅顺�
 - 全部节点包含订阅自带的流量、到期或公告提示项，请勿将这些提示项选作出口。
 - 本次仅调整 FlClash 的 AI 候选列表；其他客户端文件、分流规则、DNS 配置及规则集来源沿用上游。
 
-后续修正：境外 DNS 分类键改为 `geosite:geolocation-!cn`。TUN 参数仍保留上游设置，未进行客户端管理重构。参见 [FlClash 维护说明](docs/FlClash-维护说明.md) 和 [Microsoft 分流候选分析](docs/Microsoft-分流候选分析.md)。
+后续修正：境外 DNS 分类键改为 `geosite:geolocation-!cn`；Copilot 推理端点归入 AI，GitHub Pages、容器仓库和 Web IDE 等归入 GitHub。FlClash 脚本的规则和图标均来自本 fork 的 main。TUN 参数仍保留上游设置。参见 [FlClash 维护说明](docs/FlClash-维护说明.md) 和 [Microsoft 分类说明](docs/Microsoft-分流候选分析.md)。
 
 
 **阿尔忒弥斯实验室维护的代理分流配置方案。**

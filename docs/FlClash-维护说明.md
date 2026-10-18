@@ -4,7 +4,8 @@
 
 - AI 为手动选择组，候选是当前订阅的全部内联节点，保持订阅顺序。
 - 修正 DNS 分类键：`geolocation-!cn` 改为 `geosite:geolocation-!cn`。其余 DNS 参数不变。
-- 保留原有 TUN、端口、IPv6 和其他网络参数。本次没有删除 TUN，也没有增加 Microsoft 分流例外。
+- Copilot 推理端点归入 AI；GitHub Pages、容器仓库、Web IDE 和周边域名归入 GitHub。VS Code、包源及其余 Microsoft 服务保持原策略。
+- 保留上游原有 TUN、端口、IPv6 和其他网络参数。
 
 ## 原生资源自动更新
 
@@ -27,9 +28,19 @@ GeoSite/GeoIP 的下载和加载使用 FlClash/Mihomo 原生更新器。没有�
 | 跟随 fork 分支 | `BaiLiQX/Perfect-Rules@main` | 只取得 fork 上已有的内容；fork 不会自动合并上游提交 | fork 维护者选择何时同步上游 |
 | 固定提交 | URL 中使用完整 commit SHA | 重复下载仍是同一内容 | 维护者主动提升版本，更新前较容易比较变化 |
 
-当前脚本入口来自本 fork，但规则 provider 和图标继续引用上游 main。这种组合可以使用：本 fork 管理分组逻辑，上游维护小 YAML。若以后要独立修改这些 YAML，再调整其来源；仅 fork 仓库不会自动改变脚本里的 URL。
+当前 FlClash 脚本入口、规则 provider 和图标均指向本 fork 的 main。运行时不会直接跟随 n0de-sudo/Perfect-Rules main；GeoSite/GeoIP 仍由 FlClash 从原有 MetaCubeX 数据源原生更新。
 
 多数 provider 仅引用 GEOSITE 分类。固定小 YAML 的版本，不等于固定客户端 GEOSITE.dat 的完整名单版本。
+
+## 后续同步上游
+
+需要同步时，由维护者先读取 `n0de-sudo/Perfect-Rules` 的 main 差异，再合并到本 fork。不会定时自动合并上游。
+
+同步时保留这些定制：AI 全节点手动选择、正确的境外 DNS 分类键、AI/GitHub 明确例外、FlClash 规则与图标的 fork 地址。TUN 参数遵循上游；若上游修改 TUN，合并前说明影响。
+
+同步前保留工作区未提交改动；有冲突时逐项处理，不用强制同步或历史重写覆盖 fork。发布前运行 `node --test tests/flclash.test.cjs`，再验证修改涉及的实际规则名单和代表站点。
+
+本地 checkout 的 `origin` 为本 fork，`upstream` 为 n0de-sudo/Perfect-Rules；新 checkout 需自行添加 upstream。FlClash 资源自动更新只下载本 fork 已发布的内容，不负责合并 Git 提交。
 
 ## TUN 与系统代理
 
