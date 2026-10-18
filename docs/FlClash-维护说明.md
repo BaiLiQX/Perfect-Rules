@@ -34,7 +34,7 @@ GeoSite/GeoIP 的下载和加载使用 FlClash/Mihomo 原生更新器。没有�
 | 跟随 fork 分支 | `BaiLiQX/Perfect-Rules@main` | 只取得 fork 上已有的内容；fork 不会自动合并上游提交 | fork 维护者选择何时同步上游 |
 | 固定提交 | URL 中使用完整 commit SHA | 重复下载仍是同一内容 | 维护者主动提升版本，更新前较容易比较变化 |
 
-当前 FlClash 脚本入口、规则 provider 和图标均指向本 fork 的 main。运行时不会直接跟随 n0de-sudo/Perfect-Rules main；GeoSite/GeoIP 仍由 FlClash 从原有 MetaCubeX 数据源原生更新。
+当前 FlClash 脚本入口、规则 provider 和图标均指向本 fork 的 main。AI provider 使用 GitHub Raw 和独立的 `./rules/ai-github.yaml` 缓存路径，避免旧 CDN 内容继续生效；其余 provider 和图标仍使用 jsDelivr。旧版用户同步正在使用的远程 FlClash 脚本后即可应用该迁移，见 [AI 分流说明](AI-分流说明.md)。运行时不会直接跟随 n0de-sudo/Perfect-Rules main；GeoSite/GeoIP 仍由 FlClash 从原有 MetaCubeX 数据源原生更新。
 
 多数 provider 仅引用 GEOSITE 分类。固定小 YAML 的版本，不等于固定客户端 GEOSITE.dat 的完整名单版本。
 

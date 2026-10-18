@@ -13,7 +13,11 @@ AI provider 在 FlClash 的 Google、GitHub、Microsoft provider 之前匹配。
 
 ## 更新到客户端
 
-这是 `Clash/rules/ai.yaml` 的变化。FlClash“资源”页的规则提供者中更新 **AI**；只更新脚本或 GeoSite 不等于已更新此 YAML。核心也按 provider 的 24 小时间隔尝试更新。分支 CDN 可能有缓存，更新后应核对实际缓存内容。
+AI 规则保存在 `Clash/rules/ai.yaml`，由 `FlClash.js` 生成的 AI rule-provider 下载。AI 现使用本 fork 的 GitHub Raw 地址，缓存路径为 `./rules/ai-github.yaml`，避免分支 CDN 仍返回旧版内容或继续复用旧的 `./rules/ai.yaml`。
+
+对于“通过 URL 导入 JS，再给机场订阅设置脚本覆写”的用法，本次修复只需进入原先导入脚本的列表，打开 **FlClash** 脚本的菜单并执行**同步**。正在使用该脚本时，FlClash 会重新应用当前订阅，核心再按新的 URL 和缓存路径下载 AI YAML；不需要单独导入 `ai.yaml`、修改机场订阅 URL 或切换节点。同步后应核对最终 AI provider 的 URL、缓存内容和连接命中，不能仅凭脚本更新时间判断下载已成功。
+
+今后只修改 `ai.yaml` 时，核心按 provider 的 24 小时间隔尝试更新；脚本同步本身并不保证每次强制刷新已有 YAML。脚本生成的 provider 也不一定出现在客户端“资源”页的独立规则列表中，不以该页面存在 AI 更新按钮为前提。GeoSite 更新同样不等于更新此 YAML。
 
 ## Gemini 跳转到异常流量页
 

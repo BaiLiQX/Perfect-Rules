@@ -876,8 +876,11 @@ const main = (config) => {
 
   config["rule-providers"] = {
 
-    "AI":
-      createRuleProvider("ai.yaml"),
+    // Fetch AI rules from GitHub directly; a new path avoids the old CDN cache.
+    "AI": Object.assign(createRuleProvider("ai.yaml"), {
+      "url": "https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/ai.yaml",
+      "path": "./rules/ai-github.yaml"
+    }),
 
     "YouTube":
       createRuleProvider("youtube.yaml"),

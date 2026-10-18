@@ -31,8 +31,15 @@ test('AI keeps every subscription option in order as a manual selector', () => {
 test('FlClash providers and icons follow this fork', () => {
   const config = generate(input);
   assert.equal(Object.keys(config['rule-providers']).length, 12);
-  for (const provider of Object.values(config['rule-providers'])) {
-    assert.ok(provider.url.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/rules/'));
+  for (const [name, provider] of Object.entries(config['rule-providers'])) {
+    if (name === 'AI') {
+      assert.equal(provider.url, 'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/ai.yaml');
+      assert.equal(provider.path, './rules/ai-github.yaml');
+      assert.notEqual(provider.path, './rules/ai.yaml', 'do not reuse the stale CDN cache on script sync');
+      assert.equal(provider.interval, 86400);
+    } else {
+      assert.ok(provider.url.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/rules/'));
+    }
   }
   for (const group of config['proxy-groups']) {
     if (group.icon) assert.ok(group.icon.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/icons/'));

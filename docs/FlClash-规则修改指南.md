@@ -72,7 +72,7 @@ payload:
 2. 点击右上角编辑（铅笔），在原有 `payload` 内添加规则。
 3. 填写说明性的 Commit 信息，例如 `fix(ai): route dedicated example API via AI group`。
 4. 变更较大时优先提交新分支并创建 Pull Request；待测试检查通过后再合并。
-5. 在 FlClash「资源 / 规则提供者」更新 AI；然后观察连接日志确认命中。
+5. 让核心更新 AI rule-provider 的 YAML，然后观察连接日志确认命中。脚本生成的 provider 不一定出现在「资源」页的独立规则列表中；具体同步方式见下节和 [AI 分流说明](AI-分流说明.md)。
 
 ### 方式 B：本地修改（适合多文件、长期维护）
 
@@ -102,11 +102,13 @@ git push origin main
 | 修改了什么 | 客户端操作 | 验证点 |
 |---|---|---|
 | `Clash/FlClash.js` | 更新远程脚本，重新应用订阅覆写 | 最终生效配置、策略组、规则顺序 |
-| `Clash/rules/ai.yaml`、`github.yaml` 等 | 更新相应 Rule Provider；必要时重载 | 规则 Provider 最新内容、连接面板命中 |
+| `Clash/rules/ai.yaml`、`github.yaml` 等 | 核心按 provider 的 24 小时间隔更新；若客户端提供该运行资源的更新入口，也可手动触发 | 规则 Provider 最新内容、连接面板命中 |
 | 客户端自身 GeoSite / GeoIP 分类资源 | 使用 FlClash 的原生资源更新 | 类别规则匹配有无变化 |
 | 只是面板里切换节点 | 通常直接生效；已有长连接可断开重连 | 连接面板显示目标实际出口 |
 
-此 Fork 的脚本、规则与图标链接使用 `BaiLiQX/Perfect-Rules@main`；CDN 可能缓存旧版本。修改 GitHub 的源文件**不保证 FlClash 立即下载到新版本**。
+此 Fork 的远程入口均跟随 `BaiLiQX/Perfect-Rules` 的 main。AI YAML 使用 GitHub Raw 和独立缓存路径，其余规则与图标仍使用 jsDelivr 分支地址；CDN 可能缓存旧版本。修改 GitHub 的源文件**不保证 FlClash 立即下载到新版本**。
+
+从旧版 AI CDN 配置迁移时，在原先导入 JS 的脚本列表，对 **FlClash** 执行**同步**即可重新应用当前订阅，新生成的 AI provider 使用新地址和新缓存路径。无需单独导入 AI YAML，也不用重新添加机场订阅。后续只修改 YAML 内容时，仍按上表的 provider 更新机制生效。
 
 ## 六、提交前后核对清单
 
