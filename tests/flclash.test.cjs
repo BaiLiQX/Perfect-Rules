@@ -43,6 +43,7 @@ test('foreign DNS uses a GeoSite policy and AI precedes broader services', () =>
   const config = generate(input);
   assert.ok(config.dns['nameserver-policy']['geosite:geolocation-!cn']);
   assert.equal(config.dns['nameserver-policy']['geolocation-!cn'], undefined);
+  assert.ok(config.rules.indexOf('RULE-SET,AI,AI') < config.rules.indexOf('RULE-SET,Google,Google'));
   assert.ok(config.rules.indexOf('RULE-SET,AI,AI') < config.rules.indexOf('RULE-SET,GitHub,GitHub'));
   assert.ok(config.rules.indexOf('RULE-SET,GitHub,GitHub') < config.rules.indexOf('RULE-SET,Microsoft,Microsoft'));
 });
@@ -141,4 +142,50 @@ test('an existing general selector is rebuilt once and does not refer to itself'
   const once = generate(config);
   assert.deepEqual(once['proxy-groups'], config['proxy-groups']);
   assertAcyclic(once);
+});
+
+const aiRules = fs.readFileSync(path.join(__dirname, '../Clash/rules/ai.yaml'), 'utf8')
+  .split(/\r?\n/).filter(line => /^\s+- /.test(line)).map(line => line.trim().slice(2));
+function explicitAiMatch(host) {
+  return aiRules.some(rule => {
+    const [kind, value] = rule.split(',');
+    return kind === 'DOMAIN' ? host === value
+      : kind === 'DOMAIN-SUFFIX' && (host === value || host.endsWith('.' + value));
+  });
+}
+
+test('Gemini web, mobile, AI Studio and NotebookLM work without GeoSite matches', () => {
+  for (const host of [
+    'gemini.google.com', 'gemini.google', 'gemini.gstatic.com', 'bard.google.com',
+    'geminiweb-pa.clients.google.com', 'geminiweb-pa.clients6.google.com',
+    'robinfrontend-pa.googleapis.com', 'generativelanguage.googleapis.com',
+    'geller-pa.googleapis.com', 'labstailwind.pa.googleapis.com',
+    'aistudio.google.com', 'makersuite.google.com', 'ai.google.dev',
+    'alkalicore-pa.clients6.google.com', 'alkalimakersuite-pa.clients6.google.com',
+    'webchannel-alkalimakersuite-pa.clients6.google.com',
+    'notebooklm.google.com', 'notebooklm-pa.googleapis.com',
+    'cloudaicompanion.googleapis.com', 'cloudcode-pa.googleapis.com',
+  ]) assert.ok(explicitAiMatch(host), host);
+});
+
+test('core AI APIs and assets have explicit coverage while retaining the GeoSite umbrella', () => {
+  for (const host of [
+    'chatgpt.com', 'auth.openai.com', 'api.openai.com', 'cdn.oaistatic.com',
+    'files.oaiusercontent.com', 'claude.ai', 'claude.com', 'api.anthropic.com',
+    'claudeusercontent.com', 'api.x.ai', 'grok.com', 'api.perplexity.ai',
+    'pplx.ai', 'openrouter.ai', 'api.githubcopilot.com', 'copilot.microsoft.com',
+  ]) assert.ok(explicitAiMatch(host), host);
+  assert.ok(aiRules.includes('GEOSITE,category-ai-!cn'));
+  assert.equal(new Set(aiRules).size, aiRules.length);
+});
+
+test('AI exceptions preserve shared Google services and domain boundaries', () => {
+  for (const host of [
+    'www.google.com', 'accounts.google.com', 'oauth2.googleapis.com',
+    'www.gstatic.com', 'fonts.gstatic.com', 'storage.googleapis.com',
+    'youtube.com', 'github.com', 'login.microsoftonline.com', 'gemini.com',
+    'gemini.google.com.evil.example', 'notgemini.google.com',
+    'generativelanguage.googleapis.com.evil.example',
+    'other.geminiweb-pa.clients6.google.com',
+  ]) assert.ok(!explicitAiMatch(host), host);
 });

@@ -13,6 +13,8 @@ AI 策略组直接列出当前机场订阅中的全部节点，保留订阅顺�
 
 后续修正：境外 DNS 分类键改为 `geosite:geolocation-!cn`；Copilot 推理端点归入 AI，GitHub Pages、容器仓库和 Web IDE 等归入 GitHub。FlClash 脚本的规则和图标均来自本 fork 的 main。TUN 参数仍保留上游设置。参见 [FlClash 维护说明](docs/FlClash-维护说明.md) 和 [Microsoft 分类说明](docs/Microsoft-分流候选分析.md)。
 
+AI 规则还为 Gemini、AI Studio、NotebookLM 等 Google AI 专用域名，以及 OpenAI、Claude、Grok、Perplexity、OpenRouter 的核心入口/API/资源添加明确匹配，保留 GeoSite 分类兜底。Google 共享登录和普通搜索继续使用 Google 组。规则更新与异常流量页的排查见 [AI 分流说明](docs/AI-分流说明.md)。
+
 
 **阿尔忒弥斯实验室维护的代理分流配置方案。**
 
