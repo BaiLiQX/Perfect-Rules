@@ -122,7 +122,7 @@ const main = (config) => {
         "https://doh.pub/dns-query"
       ],
 
-      "geolocation-!cn": [
+      "geosite:geolocation-!cn": [
         "https://cloudflare-dns.com/dns-query",
         "https://dns.google/dns-query"
       ]
