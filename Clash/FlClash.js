@@ -1242,7 +1242,7 @@ const main = (config) => {
   const businessGroupNames = new Set([
     "AI", "YouTube", "Google", "GitHub", "Netflix", "Spotify",
     "Steam", "Telegram", "TikTok", "Apple", "Microsoft", "网络检测",
-    "一键代理"
+    "一键代理", "外网通用"
   ]);
 
   const preservedGroupsByName = new Map(
@@ -1266,16 +1266,38 @@ const main = (config) => {
     );
   }
 
-  const airportGroupOptions = finalPreservedGroups
+  const safeAirportGroups = finalPreservedGroups
+    .filter((group) => !reachesBusinessGroup(group.name, new Set()));
+
+  const airportGroupOptions = safeAirportGroups
     .filter((group) => isAutoSelectGroup(group.name) || isFailoverGroup(group.name))
-    .filter((group) => !reachesBusinessGroup(group.name, new Set()))
+    .map((group) => group.name);
+
+  // Keep the general selector short: airport auto-select, failover,
+  // regional pools, then named airport all-node groups.
+  // Never expand raw subscription nodes here; AI stays unchanged.
+  const generalAutoOptions = airportGroupOptions
+    .filter((name) => isAutoSelectGroup(name));
+
+  const generalFailoverOptions = airportGroupOptions
+    .filter((name) => isFailoverGroup(name) && !isAutoSelectGroup(name));
+
+  const airportAllNodeOptions = safeAirportGroups
+    .filter((group) =>
+      !isAutoSelectGroup(group.name) &&
+      !isFailoverGroup(group.name) &&
+      isAllNodesGroup(group))
     .map((group) => group.name);
 
   const generalProxyGroup = {
     "name": "外网通用",
     "type": "select",
-    // Default to a region pool rather than a subscription traffic notice.
-    "proxies": Array.from(new Set(availableRegions.concat(proxyNames))),
+    "proxies": Array.from(new Set(
+      generalAutoOptions
+        .concat(generalFailoverOptions)
+        .concat(availableRegions)
+        .concat(airportAllNodeOptions)
+    )),
     "icon": getGroupIcon("外网通用")
   };
 
