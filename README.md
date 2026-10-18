@@ -1,4 +1,14 @@
 # **Perfect Rules**
+
+## 本 Fork 的 FlClash 调整
+
+AI 策略组直接列出当前机场订阅中的全部节点，保留订阅顺序，供手动选择固定节点；其他业务组继续使用上游的地区分组。
+
+- 导入本 Fork 的脚本：[FlClash.js Raw](https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/FlClash.js)，并在订阅的覆写设置中选中它。
+- 首次切换后，在 AI 组中手动选择有效节点；原先保存的“台湾”等地区组不再是 AI 的候选。
+- 全部节点包含订阅自带的流量、到期或公告提示项，请勿将这些提示项选作出口。
+- 本次仅调整 FlClash 的 AI 候选列表；其他客户端文件、分流规则、DNS 配置及规则集来源沿用上游。
+
 ## ✈️推荐机场
 [点击：九云机场8折优惠](https://n0de.jiuyyq.com)
 专属优惠码：TowpY74S

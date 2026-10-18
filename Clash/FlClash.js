@@ -1303,9 +1303,11 @@ const main = (config) => {
       "type": "select",
 
       "proxies":
-        availableRegions.concat([
-          "国内直连"
-        ])
+        name === "AI"
+          ? proxyNames.slice()
+          : availableRegions.concat([
+              "国内直连"
+            ])
 
     };
 
