@@ -310,6 +310,8 @@ const main = (config) => {
 
   const groupIcons = {
 
+    "外网通用": "Proxy.png",
+
     "一键代理": "Proxy.png",
 
     "国内直连": "China.png",
@@ -375,6 +377,8 @@ const main = (config) => {
   // ================================================================
 
   const managedGroups = {
+
+    "外网通用": true,
 
     "一键代理": true,
 
@@ -1292,12 +1296,21 @@ const main = (config) => {
   }
 
   const airportGroupOptions = finalPreservedGroups
+    .filter((group) => isAutoSelectGroup(group.name) || isFailoverGroup(group.name))
     .filter((group) => !reachesBusinessGroup(group.name, new Set()))
     .map((group) => group.name);
 
-  function withAirportGroups(options) {
+  const generalProxyGroup = {
+    "name": "外网通用",
+    "type": "select",
+    // Default to a region pool rather than a subscription traffic notice.
+    "proxies": Array.from(new Set(availableRegions.concat(proxyNames))),
+    "icon": getGroupIcon("外网通用")
+  };
+
+  function withRoutingGroups(options) {
     // Append to preserve the existing default and subscription node order.
-    return Array.from(new Set(options.concat(airportGroupOptions)));
+    return Array.from(new Set(options.concat(["外网通用"], airportGroupOptions)));
   }
 
   const mainSelector = {
@@ -1307,7 +1320,7 @@ const main = (config) => {
     "type": "select",
 
     "proxies":
-      withAirportGroups(availableRegions.concat([
+      withRoutingGroups(availableRegions.concat([
         "国内直连"
       ]))
 
@@ -1339,7 +1352,7 @@ const main = (config) => {
       "type": "select",
 
       "proxies":
-        withAirportGroups(name === "AI"
+        withRoutingGroups(name === "AI"
           ? proxyNames.slice()
           : availableRegions.concat([
               "国内直连"
@@ -1409,6 +1422,8 @@ const main = (config) => {
   config["proxy-groups"] =
 
     finalPreservedGroups
+
+      .concat([generalProxyGroup])
 
       .concat(businessGroups)
 

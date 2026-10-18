@@ -24,7 +24,7 @@ test('AI keeps every subscription option in order as a manual selector', () => {
   const config = generate(input);
   const ai = config['proxy-groups'].find(group => group.name === 'AI');
   assert.equal(ai.type, 'select');
-  assert.deepEqual(ai.proxies, input.proxies.map(proxy => proxy.name));
+  assert.deepEqual(ai.proxies, [...input.proxies.map(proxy => proxy.name), '外网通用']);
   assert.deepEqual(config.proxies, input.proxies);
 });
 
@@ -83,36 +83,62 @@ function assertAcyclic(config) {
   for (const name of groups.keys()) visit(name);
 }
 
-test('every business selector and catch-all offers all airport basic groups', () => {
+test('every business selector offers the general selector and automatic airport groups', () => {
   const original = generate(input);
   const config = generate(airportInput());
   const names = ['AI', 'YouTube', 'Google', 'GitHub', 'Netflix', 'Spotify', 'Steam', 'Telegram', 'TikTok', 'Apple', 'Microsoft', '网络检测', '一键代理'];
   for (const name of names) {
     const group = config['proxy-groups'].find(item => item.name === name);
     const previous = original['proxy-groups'].find(item => item.name === name);
-    assert.deepEqual(group.proxies, [...previous.proxies, '测试机场', '自动选择', '故障转移']);
+    assert.deepEqual(group.proxies, [...previous.proxies, '自动选择', '故障转移']);
+    assert.ok(!group.proxies.includes('测试机场'));
   }
   assertAcyclic(config);
 });
 
-test('airport names are dynamic and do not introduce duplicate options', () => {
+test('the general selector is independent of airport names and has no duplicates', () => {
   for (const name of ['测试机场', '另一个订阅']) {
     const config = generate(airportInput(name));
     const ai = config['proxy-groups'].find(group => group.name === 'AI');
-    assert.ok(ai.proxies.includes(name));
+    assert.ok(!ai.proxies.includes(name));
+    assert.ok(ai.proxies.includes('外网通用'));
+    assert.ok(config['proxy-groups'].some(group => group.name === name));
     assert.equal(new Set(ai.proxies).size, ai.proxies.length);
     assertAcyclic(config);
   }
 });
 
-test('an airport group pointing to a business group cannot be offered back', () => {
+test('an automatic airport group pointing to a business group cannot be offered back', () => {
   const fixture = airportInput();
   fixture.proxies.push({ name: '节点 C', type: 'ss' });
-  fixture['proxy-groups'][0].proxies.push('节点 C', 'YouTube');
+  fixture['proxy-groups'][0].proxies.push('节点 C');
+  fixture['proxy-groups'][2].proxies.push('YouTube');
   const config = generate(fixture);
   assert.ok(config['proxy-groups'].some(group => group.name === '测试机场'));
   for (const name of ['AI', 'YouTube', 'Google', '一键代理']) {
     assert.ok(!config['proxy-groups'].find(group => group.name === name).proxies.includes('测试机场'));
+    assert.ok(!config['proxy-groups'].find(group => group.name === name).proxies.includes('故障转移'));
   }
   assertAcyclic(config);
+});
+
+test('the general selector offers region pools first, then every raw node in subscription order', () => {
+  const config = generate(airportInput());
+  const general = config['proxy-groups'].find(group => group.name === '外网通用');
+  const regions = config['proxy-groups'].filter(group => group.type === 'url-test' && group.name !== '自动选择');
+  assert.equal(general.type, 'select');
+  assert.deepEqual(general.proxies, [...regions.map(group => group.name), ...input.proxies.map(proxy => proxy.name)]);
+  for (const region of regions) {
+    assert.ok(region.proxies.every(name => input.proxies.some(proxy => proxy.name === name)));
+  }
+  assertAcyclic(config);
+});
+
+test('an existing general selector is rebuilt once and does not refer to itself', () => {
+  const fixture = airportInput('外网通用');
+  const config = generate(fixture);
+  assert.equal(config['proxy-groups'].filter(group => group.name === '外网通用').length, 1);
+  const once = generate(config);
+  assert.deepEqual(once['proxy-groups'], config['proxy-groups']);
+  assertAcyclic(once);
 });
