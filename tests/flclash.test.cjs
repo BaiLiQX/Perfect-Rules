@@ -146,6 +146,27 @@ test('general selector shows auto-select, failover, regions, then the airport gr
   assertAcyclic(config);
 });
 
+test('small airport group with only three nodes is still offered instead of expanding nodes', () => {
+  const minimal = input.proxies.filter(proxy => ['台湾节点 B', '香港节点 A', '美国节点 C'].includes(proxy.name));
+  const fixture = {
+    proxies: minimal,
+    'proxy-groups': [
+      { name: '示例机场', type: 'select', proxies: [
+        '自动选择', '故障转移', ...minimal.map(proxy => proxy.name),
+      ] },
+      { name: '自动选择', type: 'url-test', proxies: minimal.map(proxy => proxy.name) },
+      { name: '故障转移', type: 'fallback', proxies: minimal.map(proxy => proxy.name) },
+    ],
+  };
+  const config = generate(fixture);
+  const general = config['proxy-groups'].find(group => group.name === '外网通用');
+  assert.deepEqual(general.proxies.slice(0, 2), ['自动选择', '故障转移']);
+  assert.ok(general.proxies.includes('示例机场'));
+  assert.ok(config['proxy-groups'].some(group => group.name === '示例机场'));
+  assert.ok(general.proxies.every(name => !minimal.some(proxy => proxy.name === name)));
+  assertAcyclic(config);
+});
+
 test('general selector retains regions but does not list raw nodes if no airport all-node group exists', () => {
   const config = generate(input);
   const general = config['proxy-groups'].find(group => group.name === '外网通用');
