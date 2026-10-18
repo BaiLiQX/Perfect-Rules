@@ -9,9 +9,9 @@ AI 策略组直接列出当前机场订阅中的全部节点，保留订阅顺�
 - 导入本 Fork 的脚本：[FlClash.js Raw](https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/FlClash.js)，并在订阅的覆写设置中选中它。
 - 首次切换后，在 AI 组中手动选择有效节点；原先保存的“台湾”等地区组不再是 AI 的候选。
 - 全部节点包含订阅自带的流量、到期或公告提示项，请勿将这些提示项选作出口。
-- 本次仅调整 FlClash 的 AI 候选列表；其他客户端文件、分流规则、DNS 配置及规则集来源沿用上游。
+- FlClash 现以 Windows 系统代理为日常使用方式：不强制开启 TUN，也不监听 53 端口；这不能接管绕过系统代理的软件，其 DNS 需要由操作系统自行保护。其他客户端配置保持不变。
 
-后续修正：境外 DNS 分类键改为 `geosite:geolocation-!cn`；Copilot 推理端点归入 AI，GitHub Pages、容器仓库和 Web IDE 等归入 GitHub。FlClash 脚本的规则和图标均来自本 fork 的 main。TUN 参数仍保留上游设置。参见 [FlClash 维护说明](docs/FlClash-维护说明.md) 和 [Microsoft 分类说明](docs/Microsoft-分流候选分析.md)。
+后续修正：境外 DNS 分类键改为 `geosite:geolocation-!cn`；Copilot 推理端点归入 AI，GitHub Pages、容器仓库和 Web IDE 等归入 GitHub。FlClash 脚本的规则和图标均来自本 fork 的 main。境外 DoH 与备用 DoH 指定经“外网通用”策略组连接，TUN 与其 DNS 劫持参数不再由脚本强制启用。参见 [FlClash 维护说明](docs/FlClash-维护说明.md) 和 [Microsoft 分类说明](docs/Microsoft-分流候选分析.md)。
 
 AI 规则还为 Gemini、AI Studio、NotebookLM 等 Google AI 专用域名，以及 OpenAI、Claude、Grok、Perplexity、OpenRouter 的核心入口/API/资源添加明确匹配，保留 GeoSite 分类兜底。Google 共享登录和普通搜索继续使用 Google 组。规则更新与异常流量页的排查见 [AI 分流说明](docs/AI-分流说明.md)。
 
@@ -27,7 +27,7 @@ AI 规则还为 Gemini、AI Studio、NotebookLM 等 Google AI 专用域名，以
 | **支持客户端** | **版本** | **客户端** | **功能**              | **配置文件**                                              | **使用方式**             | **教程视频**                 |
 | -------------- | -------- | ---------- | --------------------- | --------------------------------------------------------- | ------------------------ | ---------------------------- |
 | Shadowrocket   | 3.0      | 苹果端     | 完美分流/DNS防泄露    | [`perfect_rules.conf`](./Shadowrocket/perfect_rules.conf) | 一键导入                 | https://youtu.be/zppJJyy6BYo |
-| FlClash        | 3.0      | 全平台     | 完美分流/DNS防泄露    | [`FlClash.js`](./Clash/FlClash.js)                        | 一键导入                 | https://youtu.be/7RXy43TpjTs |
+| FlClash        | 3.0      | 全平台     | 分流/系统代理 DNS 优化 | [`FlClash.js`](./Clash/FlClash.js)                        | 一键导入                 | https://youtu.be/7RXy43TpjTs |
 | **Clash Mi**   | 3.0      | 全平台     | 完美分流 / DNS 防泄漏 | [`Clash_mi.js`](./Clash/Clash_mi.js)                      | 一键导入                 | https://youtu.be/jmJiyDSmZE0 |
 | Clash / Mihomo | 3.0      | PC         | 完美分流 / DNS 防泄漏 | [`Clash_merge.yaml`](./Clash/Clash_merge.yaml)            | 复制粘贴（见下方）       | https://youtu.be/2A2SdHP_NKA |
 | V2rayN         | 2.0      | PC         | 完美分流              | [`V2rayN.json`](./V2rayN.json)                            | 下载文件后配置（见下方） | https://youtu.be/eaTmKWPyVG4 |
