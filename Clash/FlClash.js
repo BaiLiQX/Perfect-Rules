@@ -1304,8 +1304,10 @@ const main = (config) => {
   };
 
   function withRoutingGroups(options) {
-    // Append to preserve the existing default and subscription node order.
-    return Array.from(new Set(options.concat(["外网通用"], airportGroupOptions)));
+    // Put routing shortcuts first; retain the group's existing options in order.
+    return Array.from(new Set(
+      ["外网通用"].concat(generalAutoOptions, generalFailoverOptions, options)
+    ));
   }
 
   const mainSelector = {

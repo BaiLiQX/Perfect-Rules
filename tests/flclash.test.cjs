@@ -124,14 +124,18 @@ function assertAcyclic(config) {
   for (const name of groups.keys()) visit(name);
 }
 
-test('other business selectors append general routing and automatic airport groups', () => {
+test('other business selectors order routing before regions while preserving their options', () => {
   const original = generate(input);
   const config = generate(airportInput());
   const names = ['YouTube', 'Google', 'GitHub', 'Netflix', 'Spotify', 'Steam', 'Telegram', 'TikTok', 'Apple', 'Microsoft', '网络检测', '一键代理'];
   for (const name of names) {
     const group = config['proxy-groups'].find(item => item.name === name);
     const previous = original['proxy-groups'].find(item => item.name === name);
-    assert.deepEqual(group.proxies, [...previous.proxies, '自动选择', '故障转移']);
+    assert.deepEqual(previous.proxies, ['外网通用', '香港', '台湾', '美国', '其他地区', '国内直连']);
+    assert.deepEqual(group.proxies, [
+      '外网通用', '自动选择', '故障转移', '香港', '台湾', '美国', '其他地区', '国内直连',
+    ]);
+    assert.deepEqual(new Set(group.proxies), new Set([...previous.proxies, '自动选择', '故障转移']));
     assert.ok(!group.proxies.includes('测试机场'));
   }
   assertAcyclic(config);
@@ -232,6 +236,12 @@ test('multiple auto-select and failover groups are kept ahead of regional and ai
     ['外网通用', '自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移',
       '香港', '台湾', '美国', '其他地区',
       ...input.proxies.slice(1).map(proxy => proxy.name)]);
+  for (const name of ['YouTube', 'Google', 'GitHub', 'Netflix', 'Spotify', 'Steam',
+    'Telegram', 'TikTok', 'Apple', 'Microsoft', '网络检测', '一键代理']) {
+    assert.deepEqual(config['proxy-groups'].find(group => group.name === name).proxies,
+      ['外网通用', '自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移',
+        '香港', '台湾', '美国', '其他地区', '国内直连']);
+  }
   assertAcyclic(config);
 });
 
