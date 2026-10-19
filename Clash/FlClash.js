@@ -1349,7 +1349,7 @@ const main = (config) => {
     !aiNoticePattern.test(name) && !aiClientNoticePattern.test(name));
 
   const aiOptions = Array.from(new Set(
-    ["外网通用"].concat(generalAutoOptions, generalFailoverOptions, aiProxyOptions)
+    ["外网通用"].concat(generalAutoOptions, generalFailoverOptions, availableRegions, aiProxyOptions)
   ));
 
   function createBusinessGroup(name) {

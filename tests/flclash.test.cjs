@@ -20,11 +20,12 @@ const input = {
   'proxy-groups': [],
 };
 
-test('AI offers general routing before real nodes in subscription order', () => {
+test('AI offers general routing and regional pools before real nodes in subscription order', () => {
   const config = generate(input);
   const ai = config['proxy-groups'].find(group => group.name === 'AI');
   assert.equal(ai.type, 'select');
-  assert.deepEqual(ai.proxies, ['外网通用', ...input.proxies.slice(1).map(proxy => proxy.name)]);
+  assert.deepEqual(ai.proxies, ['外网通用', '香港', '台湾', '美国', '其他地区',
+    ...input.proxies.slice(1).map(proxy => proxy.name)]);
   assert.deepEqual(config.proxies, input.proxies);
 });
 
@@ -45,7 +46,7 @@ test('AI puts auto-select and failover first and excludes subscription notices',
   const config = generate(fixture);
   const ai = config['proxy-groups'].find(group => group.name === 'AI');
   assert.deepEqual(ai.proxies, [
-    '外网通用', '自动选择', '故障转移',
+    '外网通用', '自动选择', '故障转移', '香港', '台湾', '美国', '其他地区',
     ...input.proxies.slice(1).map(proxy => proxy.name), ...realNodes,
   ]);
   assert.deepEqual(config.proxies, fixture.proxies, 'subscription data is preserved');
@@ -229,6 +230,7 @@ test('multiple auto-select and failover groups are kept ahead of regional and ai
     ['自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移']);
   assert.deepEqual(config['proxy-groups'].find(group => group.name === 'AI').proxies,
     ['外网通用', '自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移',
+      '香港', '台湾', '美国', '其他地区',
       ...input.proxies.slice(1).map(proxy => proxy.name)]);
   assertAcyclic(config);
 });

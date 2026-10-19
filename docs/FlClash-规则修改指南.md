@@ -56,7 +56,7 @@ payload:
 |---|---|---|
 | 修改地区识别 | `regionPatterns`、`regionOrder` | 测试机场节点命名变体；不要误把公告节点当地区节点 |
 | 修改地区测速策略 | `regionGroups`、`url-test` | 会影响地区池的自动切换行为 |
-| 修改 AI 的候选节点模式 | `aiNoticePattern`、`aiOptions`、`createBusinessGroup` | 外网通用、自动选择、故障转移在前，过滤提示后的真实节点在后；保留订阅顺序 |
+| 修改 AI 的候选节点模式 | `aiNoticePattern`、`aiClientNoticePattern`、`aiOptions`、`createBusinessGroup` | 外网通用、自动选择、故障转移、地区测速组在前，过滤提示后的真实节点在后；保留订阅顺序 |
 | 修改「外网通用」 | `generalProxyGroup` | 被业务组和境外 DNS 引用，避免引入循环 |
 | 改业务组优先级 | `config["rules"]` | 需保留 AI / YouTube 的专用优先级 |
 | 加一整个新业务组 | `managedGroups`、`createRuleProvider`、`businessGroups`、`config["rules"]` | 通常还需新增 `Clash/rules/xxx.yaml`、图标映射与测试 |
