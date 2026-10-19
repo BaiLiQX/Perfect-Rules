@@ -20,12 +20,34 @@ const input = {
   'proxy-groups': [],
 };
 
-test('AI keeps every subscription option in order as a manual selector', () => {
+test('AI offers general routing before real nodes in subscription order', () => {
   const config = generate(input);
   const ai = config['proxy-groups'].find(group => group.name === 'AI');
   assert.equal(ai.type, 'select');
-  assert.deepEqual(ai.proxies, [...input.proxies.map(proxy => proxy.name), '外网通用']);
+  assert.deepEqual(ai.proxies, ['外网通用', ...input.proxies.slice(1).map(proxy => proxy.name)]);
   assert.deepEqual(config.proxies, input.proxies);
+});
+
+test('AI puts auto-select and failover first and excludes subscription notices', () => {
+  const fixture = airportInput();
+  const notices = [
+    '距离下次重置剩余：23天', '套餐到期：2027-08-11',
+    '-若无法使用请更新节点-', '若无法使用请更新客户端',
+    '官网：https://example.invalid', '订阅地址：测试', '公告：测试',
+  ];
+  const realNodes = [
+    '美国B1-ClashMeta', '美国C1-ClashVerge', '美国HY3神速-小火箭无延迟也能用',
+    '美国HY6神速-推荐',
+  ];
+  fixture.proxies.push(...notices.concat(realNodes).map(name => ({ name, type: 'ss' })));
+  const config = generate(fixture);
+  const ai = config['proxy-groups'].find(group => group.name === 'AI');
+  assert.deepEqual(ai.proxies, [
+    '外网通用', '自动选择', '故障转移',
+    ...input.proxies.slice(1).map(proxy => proxy.name), ...realNodes,
+  ]);
+  assert.deepEqual(config.proxies, fixture.proxies, 'subscription data is preserved');
+  assertAcyclic(config);
 });
 
 test('FlClash providers and icons follow this fork', () => {
@@ -99,10 +121,10 @@ function assertAcyclic(config) {
   for (const name of groups.keys()) visit(name);
 }
 
-test('every business selector offers the general selector and automatic airport groups', () => {
+test('other business selectors append general routing and automatic airport groups', () => {
   const original = generate(input);
   const config = generate(airportInput());
-  const names = ['AI', 'YouTube', 'Google', 'GitHub', 'Netflix', 'Spotify', 'Steam', 'Telegram', 'TikTok', 'Apple', 'Microsoft', '网络检测', '一键代理'];
+  const names = ['YouTube', 'Google', 'GitHub', 'Netflix', 'Spotify', 'Steam', 'Telegram', 'TikTok', 'Apple', 'Microsoft', '网络检测', '一键代理'];
   for (const name of names) {
     const group = config['proxy-groups'].find(item => item.name === name);
     const previous = original['proxy-groups'].find(item => item.name === name);
@@ -203,6 +225,9 @@ test('multiple auto-select and failover groups are kept ahead of regional and ai
   const general = config['proxy-groups'].find(group => group.name === '外网通用');
   assert.deepEqual(general.proxies.slice(0, 4),
     ['自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移']);
+  assert.deepEqual(config['proxy-groups'].find(group => group.name === 'AI').proxies,
+    ['外网通用', '自动选择', '机场2 自动选择', '故障转移', '机场2 故障转移',
+      ...input.proxies.slice(1).map(proxy => proxy.name)]);
   assertAcyclic(config);
 });
 

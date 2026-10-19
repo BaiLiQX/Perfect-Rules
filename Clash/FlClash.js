@@ -1277,7 +1277,7 @@ const main = (config) => {
 
   // Keep the general selector short: airport auto-select, failover,
   // regional pools, then named airport all-node groups.
-  // Never expand raw subscription nodes here; AI stays unchanged.
+  // Never expand raw subscription nodes in the general selector.
   const generalAutoOptions = airportGroupOptions
     .filter((name) => isAutoSelectGroup(name));
 
@@ -1338,6 +1338,16 @@ const main = (config) => {
   // 28. Service groups
   // ================================================================
 
+  // Subscription notices may be encoded as proxies; hide them only from AI.
+  // Keep real node labels such as ClashMeta / ClashVerge and recommendations.
+  const aiNoticePattern = /剩余流量|距离下次重置|套餐到期|到期时间|流量重置|有效期[:：]|(?:若|如)(?:无法|不能|无HY)|请更新(?:节点|客户端)|官网|订阅地址|公告|使用教程/i;
+
+  const aiProxyOptions = proxyNames.filter((name) => !aiNoticePattern.test(name));
+
+  const aiOptions = Array.from(new Set(
+    ["外网通用"].concat(generalAutoOptions, generalFailoverOptions, aiProxyOptions)
+  ));
+
   function createBusinessGroup(name) {
 
     const group = {
@@ -1347,9 +1357,9 @@ const main = (config) => {
       "type": "select",
 
       "proxies":
-        withRoutingGroups(name === "AI"
-          ? proxyNames.slice()
-          : availableRegions.concat([
+        name === "AI"
+          ? aiOptions.slice()
+          : withRoutingGroups(availableRegions.concat([
               "国内直连"
             ]))
 
