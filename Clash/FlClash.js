@@ -1342,7 +1342,11 @@ const main = (config) => {
   // Keep real node labels such as ClashMeta / ClashVerge and recommendations.
   const aiNoticePattern = /剩余流量|距离下次重置|套餐到期|到期时间|流量重置|有效期[:：]|(?:若|如)(?:无法|不能|无HY)|请更新(?:节点|客户端)|官网|订阅地址|公告|使用教程/i;
 
-  const aiProxyOptions = proxyNames.filter((name) => !aiNoticePattern.test(name));
+  // Match standalone platform/client instructions, not node labels containing Clash.
+  const aiClientNoticePattern = /^(?:安卓|电脑|苹果|ios|android|windows|macos)(?:端)?[\s:：_-]*(?:clash|shadowrocket|小火箭|客户端)/i;
+
+  const aiProxyOptions = proxyNames.filter((name) =>
+    !aiNoticePattern.test(name) && !aiClientNoticePattern.test(name));
 
   const aiOptions = Array.from(new Set(
     ["外网通用"].concat(generalAutoOptions, generalFailoverOptions, aiProxyOptions)

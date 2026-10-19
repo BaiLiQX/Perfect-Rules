@@ -34,10 +34,12 @@ test('AI puts auto-select and failover first and excludes subscription notices',
     '距离下次重置剩余：23天', '套餐到期：2027-08-11',
     '-若无法使用请更新节点-', '若无法使用请更新客户端',
     '官网：https://example.invalid', '订阅地址：测试', '公告：测试',
+    '若无HY节点-更换客户端即可', '安卓-clashmeta客户端',
+    '电脑-clashverge客户端', 'ios-小火箭 Shadowrocket客户端',
   ];
   const realNodes = [
     '美国B1-ClashMeta', '美国C1-ClashVerge', '美国HY3神速-小火箭无延迟也能用',
-    '美国HY6神速-推荐',
+    '美国HY6神速-推荐', '美国A1-小火箭', '美国HY2轻量-小火箭也能用HY',
   ];
   fixture.proxies.push(...notices.concat(realNodes).map(name => ({ name, type: 'ss' })));
   const config = generate(fixture);
