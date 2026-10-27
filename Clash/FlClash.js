@@ -842,7 +842,7 @@ const main = (config) => {
   // ================================================================
 
   const ruleBaseURL =
-    "https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/rules/";
+    "https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/";
 
 
   // ================================================================
@@ -861,7 +861,7 @@ const main = (config) => {
 
       "url": ruleBaseURL + filename,
 
-      "path": "./rules/" + filename,
+      "path": "./rules/" + filename.replace(/\.yaml$/, "-github.yaml"),
 
       "interval": 86400
 
@@ -876,11 +876,12 @@ const main = (config) => {
 
   config["rule-providers"] = {
 
-    // Fetch AI rules from GitHub directly; a new path avoids the old CDN cache.
-    "AI": Object.assign(createRuleProvider("ai.yaml"), {
-      "url": "https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/ai.yaml",
-      "path": "./rules/ai-github.yaml"
-    }),
+    // All rule providers use GitHub Raw and separate caches from the old CDN.
+    "Direct":
+      createRuleProvider("direct.yaml"),
+
+    "AI":
+      createRuleProvider("ai.yaml"),
 
     "YouTube":
       createRuleProvider("youtube.yaml"),
@@ -1454,6 +1455,7 @@ const main = (config) => {
   //
   // Rule Provider order:
   //
+  // Direct
   // NetworkTest
   // AI
   // YouTube
@@ -1493,6 +1495,13 @@ const main = (config) => {
     "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
 
     "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
+
+
+    // --------------------------------------------------------------
+    // Explicit Direct (before all service providers)
+    // --------------------------------------------------------------
+
+    "RULE-SET,Direct,国内直连",
 
 
     // --------------------------------------------------------------
