@@ -10,6 +10,7 @@
 - **AI 独立手动选节点**：ChatGPT、Gemini、Claude 等可固定出口，不必跟随地区测速组自动切换。
 - YouTube、Google、GitHub、Microsoft 等使用独立业务组；「外网通用」按**自动选择 → 故障转移 → 地区测速组 → 机场名称（全部节点）组**排列，不在该组重复铺开原始节点。
 - 维护 [AI 明确域名规则](Clash/rules/ai.yaml) 与 [GitHub 规则](Clash/rules/github.yaml)，避免专用服务被更宽泛的 Google、Microsoft 等规则抢先匹配。
+- [自定义直连域名](Clash/rules/direct.yaml) 独立维护，在业务组之前优先匹配，命中后交给只含 `DIRECT` 的「国内直连」组；全部远程规则 Provider 使用本 Fork 的 GitHub Raw。
 - 内核 DNS 区分国内与境外 DoH，**境外 DNS 上游使用 `#外网通用` 选择出口**；脚本不强制开启 TUN，也不监听 53 端口做 DNS 劫持。
 
 **边界说明：** 系统代理只能覆盖遵守代理设置的软件，不会接管整个 Windows 的 DNS；加密 DoH 不等于全系统无 DNS 泄漏。移动端若使用 VPN 接管，由 FlClash 客户端管理，并需另行核验实际生效配置。
@@ -36,7 +37,7 @@
       ↓
 Clash/FlClash.js（生成地区组、业务组与规则）
       ↓
-局域网直连 → 网络检测 → AI → YouTube → Google → GitHub → ...
+局域网直连 → 自定义直连 → 网络检测 → AI → YouTube → Google → GitHub → ...
       ↓
 Apple / Microsoft → GeoSite Private / CN → GeoIP Private / CN
       ↓
@@ -48,6 +49,7 @@ MATCH → 一键代理
 | 想修改什么 | 优先修改哪里 |
 |---|---|
 | ChatGPT、Gemini 或某网站归哪个业务组 | [`Clash/rules/*.yaml`](Clash/rules/)：增删域名 |
+| 指定网站始终直连，不经业务策略组 | [`Clash/rules/direct.yaml`](Clash/rules/direct.yaml)：添加精确域名，保存后更新 Direct Provider |
 | 调整业务组优先级、添加整个策略组 | [`Clash/FlClash.js`](Clash/FlClash.js)：`config["rules"]` 和策略组生成逻辑 |
 | 地区识别、测速组、节点候选 | [`Clash/FlClash.js`](Clash/FlClash.js)：`regionPatterns`、`regionOrder`、策略组生成部分 |
 | DoH 上游、Fake-IP 等内核 DNS | [`Clash/FlClash.js`](Clash/FlClash.js)：`config["dns"]` |
@@ -84,7 +86,7 @@ node --test tests/flclash.test.cjs
 修改文件后，需根据变更对象区分更新：
 
 - **改了 `FlClash.js`：** 在 FlClash 更新远程脚本，重新应用关联订阅。
-- **改了 `Clash/rules/ai.yaml` 等：** 在 FlClash「资源 / 规则提供者」刷新相应 Provider；脚本更新与 GeoSite 更新不等于这份 YAML 已刷新。
+- **改了 `Clash/rules/direct.yaml`、`ai.yaml` 等：** 让 Mihomo 刷新相应 Rule Provider；脚本更新与 GeoSite 更新不等于这份 YAML 已刷新。全部 Provider 使用 GitHub Raw，并采用独立于旧 CDN 的缓存路径。
 - **改了脚本中的地区/节点逻辑：** 重载后检查策略组候选和已保存的实际选择。
 - **改了 DNS：** 额外检查最终生效配置；必要时对照网卡抓包。GitHub Raw / jsDelivr 可能存在缓存延迟。
 
