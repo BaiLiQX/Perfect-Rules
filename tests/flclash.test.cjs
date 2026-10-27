@@ -53,22 +53,41 @@ test('AI puts auto-select and failover first and excludes subscription notices',
   assertAcyclic(config);
 });
 
-test('FlClash providers and icons follow this fork', () => {
+test('every FlClash rule provider uses GitHub Raw with a distinct cache path', () => {
   const config = generate(input);
-  assert.equal(Object.keys(config['rule-providers']).length, 12);
-  for (const [name, provider] of Object.entries(config['rule-providers'])) {
-    if (name === 'AI') {
-      assert.equal(provider.url, 'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/ai.yaml');
-      assert.equal(provider.path, './rules/ai-github.yaml');
-      assert.notEqual(provider.path, './rules/ai.yaml', 'do not reuse the stale CDN cache on script sync');
-      assert.equal(provider.interval, 86400);
-    } else {
-      assert.ok(provider.url.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/rules/'));
-    }
+  assert.equal(Object.keys(config['rule-providers']).length, 13);
+  for (const provider of Object.values(config['rule-providers'])) {
+    const base = 'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/';
+    assert.ok(provider.url.startsWith(base), provider.url);
+    const filename = provider.url.slice(base.length);
+    assert.ok(/^[a-z-]+\.yaml$/.test(filename), filename);
+    assert.equal(provider.path, './rules/' + filename.replace(/\.yaml$/, '-github.yaml'));
+    assert.equal(provider.interval, 86400);
+    assert.equal(provider.type, 'http');
+    assert.equal(provider.behavior, 'classical');
+    assert.equal(provider.format, 'yaml');
   }
+  assert.equal(config['rule-providers'].Direct.url,
+    'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/direct.yaml');
   for (const group of config['proxy-groups']) {
     if (group.icon) assert.ok(group.icon.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/icons/'));
   }
+});
+
+test('custom direct domains override business providers and are excluded from GitHub rules', () => {
+  const config = generate(input);
+  const directIndex = config.rules.indexOf('RULE-SET,Direct,国内直连');
+  assert.ok(directIndex >= 0);
+  for (const rule of ['RULE-SET,NetworkTest,网络检测', 'RULE-SET,AI,AI',
+    'RULE-SET,GitHub,GitHub', 'GEOSITE,cn,国内直连']) {
+    assert.ok(directIndex < config.rules.indexOf(rule), rule);
+  }
+  assert.deepEqual(config['proxy-groups'].find(group => group.name === '国内直连').proxies, ['DIRECT']);
+  const readRules = filename => fs.readFileSync(path.join(__dirname, '../Clash/rules/' + filename), 'utf8')
+    .split(/\r?\n/).filter(line => /^\s+- /.test(line)).map(line => line.trim().slice(2));
+  const wanted = ['DOMAIN,doc.auto-mas.top', 'DOMAIN,riic.autos'];
+  assert.deepEqual(readRules('direct.yaml'), wanted);
+  for (const rule of wanted) assert.ok(!readRules('github.yaml').includes(rule), rule);
 });
 
 test('foreign DNS uses a GeoSite policy and AI precedes broader services', () => {
