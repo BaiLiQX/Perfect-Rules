@@ -13,7 +13,7 @@ AI provider 在 FlClash 的 Google、GitHub、Microsoft provider 之前匹配。
 
 ## 更新到客户端
 
-AI 规则保存在 `Clash/rules/ai.yaml`，由 `FlClash.js` 生成的 AI rule-provider 下载。AI 现使用本 fork 的 GitHub Raw 地址，缓存路径为 `./rules/ai-github.yaml`，避免分支 CDN 仍返回旧版内容或继续复用旧的 `./rules/ai.yaml`。
+AI 规则保存在 `Clash/rules/ai.yaml`，由 `FlClash.js` 生成的 AI rule-provider 下载。AI 和其他业务规则 Provider 均使用本 fork 的 GitHub Raw 地址。AI 缓存路径为 `./rules/ai-github.yaml`，避免分支 CDN 仍返回旧版内容或继续复用旧的 `./rules/ai.yaml`。
 
 对于“通过 URL 导入 JS，再给机场订阅设置脚本覆写”的用法，本次修复只需进入原先导入脚本的列表，打开 **FlClash** 脚本的菜单并执行**同步**。正在使用该脚本时，FlClash 会重新应用当前订阅，核心再按新的 URL 和缓存路径下载 AI YAML；不需要单独导入 `ai.yaml`、修改机场订阅 URL 或切换节点。同步后应核对最终 AI provider 的 URL、缓存内容和连接命中，不能仅凭脚本更新时间判断下载已成功。
 
