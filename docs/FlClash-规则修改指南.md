@@ -9,6 +9,7 @@
 | AI 想换成某条美国／日本节点 | FlClash 面板 → AI → 选择实际节点 | **不需要** |
 | YouTube 想改用「外网通用」 | FlClash 面板 → YouTube → 外网通用 | **不需要** |
 | 某网站命中了错误的业务组 | `Clash/rules/<业务>.yaml`，必要时检查脚本内规则顺序 | 通常需要 |
+| 希望指定域名无条件直连 | `Clash/rules/direct.yaml`（Direct Provider 位于业务组之前） | 需要 |
 | 新增一种独立业务组 | `Clash/FlClash.js` 的策略组、Provider、`rules` 多处 | 需要，影响较大 |
 | 机场节点地区误识别 | `FlClash.js` 的 `regionPatterns` / `regionOrder` | 需要 |
 | DNS 路径异常 | 先检查系统代理、客户端最终 DNS、`#外网通用` 出口；必要时再改 `config["dns"]` | 视情况 |
@@ -36,6 +37,8 @@ payload:
 **最小匹配原则：** 优先精确域名；确认服务专用、子域名确实需要相同出口后，再扩大为后缀。不要为了 Gemini 把 `google.com`、`googleapis.com` 或 `gstatic.com` 整体划给 AI：这些域名包含大量 Google 共享服务。
 
 其他已有业务规则放在 [`Clash/rules/`](../Clash/rules/)：例如 `github.yaml`、`network-test.yaml`、`google.yaml`。部分文件只有 `GEOSITE,...`，需要明确覆盖时，可以**在其上方追加 `DOMAIN` 或 `DOMAIN-SUFFIX`**。
+
+**网站需要固定直连时**，编辑 [`direct.yaml`](../Clash/rules/direct.yaml)，而不是放进 `github.yaml`：例如 `DOMAIN,doc.auto-mas.top` 与 `DOMAIN,riic.autos`。`RULE-SET,Direct,国内直连` 在 NetworkTest / AI / GitHub 等服务规则之前匹配；目前「国内直连」只有 `DIRECT` 候选。`/skland` 属于 URL 路径，普通 Mihomo 域名规则不能只匹配该路径。
 
 **特别注意优先级：** [`FlClash.js`](../Clash/FlClash.js) 中的 `config["rules"]` 是从上到下首次命中生效。AI 先于 Google / GitHub / Microsoft，YouTube 先于 Google。若一个域名同时被上游与下游规则命中，**只改靠后的 provider 通常无效**，还应检查靠前 provider 是否先匹配它。
 
@@ -106,9 +109,9 @@ git push origin main
 | 客户端自身 GeoSite / GeoIP 分类资源 | 使用 FlClash 的原生资源更新 | 类别规则匹配有无变化 |
 | 只是面板里切换节点 | 通常直接生效；已有长连接可断开重连 | 连接面板显示目标实际出口 |
 
-此 Fork 的远程入口均跟随 `BaiLiQX/Perfect-Rules` 的 main。AI YAML 使用 GitHub Raw 和独立缓存路径，其余规则与图标仍使用 jsDelivr 分支地址；CDN 可能缓存旧版本。修改 GitHub 的源文件**不保证 FlClash 立即下载到新版本**。
+此 Fork 的规则 Provider 均使用 `raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/`，缓存路径为 `./rules/<文件名>-github.yaml`，避免迁移后误复用原 jsDelivr 缓存。图标仍使用 jsDelivr。修改 GitHub 的源文件**不保证 FlClash 立即下载到新版本**，仍需让 Mihomo 刷新对应 Provider 或等待其更新周期。
 
-从旧版 AI CDN 配置迁移时，在原先导入 JS 的脚本列表，对 **FlClash** 执行**同步**即可重新应用当前订阅，新生成的 AI provider 使用新地址和新缓存路径。无需单独导入 AI YAML，也不用重新添加机场订阅。后续只修改 YAML 内容时，仍按上表的 provider 更新机制生效。
+从旧版 CDN 配置迁移时，在原先导入 JS 的脚本列表，对 **FlClash** 执行**同步**以重新应用当前订阅，生成的全部 Provider 会使用新 Raw 地址与新缓存路径。无需单独导入规则 YAML，也不用重新添加机场订阅。后续只修改 YAML 内容时，仍按上表的 Provider 更新机制生效。
 
 ## 六、提交前后核对清单
 
