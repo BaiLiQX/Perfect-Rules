@@ -55,7 +55,7 @@ test('AI puts auto-select and failover first and excludes subscription notices',
 
 test('every FlClash rule provider uses GitHub Raw with a distinct cache path', () => {
   const config = generate(input);
-  assert.equal(Object.keys(config['rule-providers']).length, 13);
+  assert.equal(Object.keys(config['rule-providers']).length, 14);
   for (const provider of Object.values(config['rule-providers'])) {
     const base = 'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/';
     assert.ok(provider.url.startsWith(base), provider.url);
@@ -72,6 +72,28 @@ test('every FlClash rule provider uses GitHub Raw with a distinct cache path', (
   for (const group of config['proxy-groups']) {
     if (group.icon) assert.ok(group.icon.startsWith('https://cdn.jsdelivr.net/gh/BaiLiQX/Perfect-Rules@main/Clash/icons/'));
   }
+});
+
+test('MuMu ad endpoints are precisely matched and rejected before general rules', () => {
+  const config = generate(input);
+  const rejectRule = 'RULE-SET,MuMuAds,REJECT';
+  const rejectIndex = config.rules.indexOf(rejectRule);
+  assert.ok(rejectIndex >= 0);
+  assert.ok(config.rules.indexOf('RULE-SET,Direct,国内直连') < rejectIndex);
+  for (const rule of ['RULE-SET,NetworkTest,网络检测', 'RULE-SET,AI,AI',
+    'GEOSITE,cn,国内直连']) {
+    assert.ok(rejectIndex < config.rules.indexOf(rule), rule);
+  }
+  assert.equal(config['rule-providers'].MuMuAds.url,
+    'https://raw.githubusercontent.com/BaiLiQX/Perfect-Rules/main/Clash/rules/mumu-ads.yaml');
+  const rules = fs.readFileSync(path.join(__dirname, '../Clash/rules/mumu-ads.yaml'), 'utf8')
+    .split(/\r?\n/).filter(line => /^\s+- /.test(line)).map(line => line.trim().slice(2));
+  assert.deepEqual(rules, [
+    'DOMAIN,mumu-global.fp.ps.easebar.com',
+    'DOMAIN,nemu.fp.ps.netease.com',
+    'DOMAIN,mumu.nie.netease.com',
+  ]);
+  assert.ok(rules.every(rule => rule.startsWith('DOMAIN,')), 'avoid broad NetEase suffix blocking');
 });
 
 test('custom direct domains override business providers and are excluded from GitHub rules', () => {

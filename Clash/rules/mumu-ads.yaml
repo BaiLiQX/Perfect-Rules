@@ -1,0 +1,7 @@
+payload:
+  # MuMu Player Global startup advertisement image service.
+  - DOMAIN,mumu-global.fp.ps.easebar.com
+  # MuMu Player 12 CN startup advertisement image service.
+  - DOMAIN,nemu.fp.ps.netease.com
+  # MuMu Player 12 promotional message center; may also block notices.
+  - DOMAIN,mumu.nie.netease.com

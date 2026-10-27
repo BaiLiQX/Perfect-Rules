@@ -880,6 +880,9 @@ const main = (config) => {
     "Direct":
       createRuleProvider("direct.yaml"),
 
+    "MuMuAds":
+      createRuleProvider("mumu-ads.yaml"),
+
     "AI":
       createRuleProvider("ai.yaml"),
 
@@ -1456,6 +1459,7 @@ const main = (config) => {
   // Rule Provider order:
   //
   // Direct
+  // MuMuAds
   // NetworkTest
   // AI
   // YouTube
@@ -1502,6 +1506,9 @@ const main = (config) => {
     // --------------------------------------------------------------
 
     "RULE-SET,Direct,国内直连",
+
+    // Block known MuMu ad endpoints only, not broad NetEase services.
+    "RULE-SET,MuMuAds,REJECT",
 
 
     // --------------------------------------------------------------
